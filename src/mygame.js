@@ -1,59 +1,56 @@
 var ctx;
-
-var Game = { 
+var scale = 20;
+var Game = {
     playing: false,
     initialized: false,
-    Initialize: function() {
+    PositionToPx: function (p) {
+        return p * scale;
+    },
+    Write: function (text, x, y, fg) {
+        ctx.fillText(text, x * scale, y * scale);
+    },
+    Initialize: function () {
         if (this.initialized) {
             return;
         }
-        
-        ctx.fillText("@", 5,  4);
-        ctx.fillText(15, 4, "%", "#0f0");          // foreground color
-        ctx.fillText(25, 4, "#", "#f00", "#009");  // and background color
-        
-        document.onkeydown = function(e) {
+        this.Write("@", 5, 4);
+        this.Write(15, 4, "%", "#0f0"); // foreground color
+        this.Write(25, 4, "#", "#f00", "#009"); // and background color
+        document.onkeydown = function (e) {
             var code = e.keyCode;
+            Game.Debug("Keydown: " + code);
             if (code == 13) {
                 Game.HandleReturn();
             }
-
-            var vk = "?"; /* find the corresponding constant */
-            for (var name in ROT.KEYS) {
-                if (ROT.KEYS[name] == code && name.indexOf("VK_") == 0) { vk = name; }
-            }
-            Game.Debug("Keydown: code is " + code + " (" + vk + ")");
         };
-
         this.intiailized = true;
-    }, // this.init
-    HandleReturn: function() {
+    },
+    HandleReturn: function () {
         this.Start();
     },
-    Debug: function(message) {
+    Debug: function (message) {
         document.getElementById("debug").innerHTML = message;
     },
-    RenderMenu: function(menu) {
+    RenderMenu: function (menu) {
         if (menu == "main") {
-            ctx.fillText("Dungeon Sweeper", 5,  2);
-            ctx.fillText("Escape the dungeons riddled with mines. Use your minesweeping skills to find your way out of captivity and search for the legendary treasure.", 13, 40);
-            ctx.fillText("Press Enter to play.", 5, 80)
+            this.Write("Dungeon Sweeper", 5, 1);
+            this.Write("Use your minesweeping skills to find your way out of captivity and search for the legendary treasure.", 1, 2);
+            this.Write("Press Enter to play.", 1, 3);
         }
-        else
-        {
-            Game.Debug("Invalid parameter: " + menu)
+        else {
+            Game.Debug("Invalid parameter: " + menu);
         }
     },
-    Render: function() {
+    Render: function () {
         ctx.fillRect(25, 25, 100, 100);
         ctx.clearRect(45, 45, 60, 60);
         ctx.strokeRect(50, 50, 50, 50);
-        ctx.fillText("@", 50,  4);
-        ctx.fillText(15, 4, "%", "#0f0");          /* foreground color */
-        ctx.fillText(25, 4, "#", "#f00", "#009");  /* and background color */
+        this.Write("@", 50, 4);
+        this.Write(15, 4, "%", "#0f0"); /* foreground color */
+        this.Write(25, 4, "#", "#f00", "#009"); /* and background color */
     },
-    Start: function() {
-        playing = true;
+    Start: function () {
+        this.playing = true;
         this.Render();
     }
-}
+};
