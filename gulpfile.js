@@ -4,7 +4,7 @@ var source = require('vinyl-source-stream');
 var tsify = require('tsify');
 var paths = {
     pages: ['src/*.html'],
-    code: ['src/data.ts','src/game.ts','src/renderer.ts','src/startup.ts']
+    code: ['src/data.ts','src/game.ts','src/renderer.ts','src/rioom.ts','src/startup.ts']
 };
 
 gulp.task('copy-html', function () {
