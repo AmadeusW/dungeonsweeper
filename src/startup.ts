@@ -1,12 +1,19 @@
 import { Renderer } from "./renderer";
 import { Game } from "./game";
 
-// @ts-ignore: Property 'getContext' does not exist on type 'HTMLElement'.
-let ctx = document.getElementById('displayHost').getContext('2d');
-let scale = 20;
-let renderer = new Renderer(ctx, scale);
+console.log("Dungeon Sweeper startup");
+const element = document.getElementById('debug');
+if (element)
+    element.innerText = "Dungeon Sweeper";
 
-ctx.font = '20px monospace';
-let game = new Game(renderer);
-game.Initialize();
-game.OpenMenu("main");
+const context = (<HTMLCanvasElement>document.getElementById('displayHost')).getContext('2d');
+if (context) {
+    let scale = 20;
+    let renderer = new Renderer(context, scale);
+    
+    context.font = '20px monospace';
+    let game = new Game(renderer);
+    game.Initialize();
+    game.OpenMenu("main");
+}
+
