@@ -1,5 +1,6 @@
 import { Point } from "./data";
 import { Renderer } from "./renderer";
+import { Room } from "./room";
 
 export class Game {
     constructor (
@@ -7,11 +8,13 @@ export class Game {
     ) {
         this.playing = false;
         this.initialized = false;
+
     }
 
     // @ts-ignore 'playing' is declared but its value is never read
     private playing: boolean;
     private initialized: boolean;
+    private currentRoom?: Room;
     
     Initialize() {
         if (this.initialized) {
@@ -26,6 +29,10 @@ export class Game {
                 game.HandleReturn();
             }
         };
+
+        const size = 15;
+        this.currentRoom = new Room(size, size);
+        this.renderer.DrawRoom(this.currentRoom);
 
         this.initialized = true;
     }
@@ -48,7 +55,9 @@ export class Game {
 
     Start() {
         this.playing = true;
-        let p = Point.Make(3, 3);
-        this.renderer.Write("hi", p);
+        if (this.currentRoom) {
+            this.currentRoom.Initialize(Math.floor(this.currentRoom.height * this.currentRoom.width / 5));
+            this.renderer.DrawRoom(this.currentRoom);
+        }
     }
 }

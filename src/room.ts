@@ -1,65 +1,79 @@
 import { Point } from "./data";
 
+export class Tile {
+    constructor(){
+        this.hasMine = false;
+        this.score = 0;
+        this.hasTreasure = false;
+        this.isRevealed = false;
+    }
+    // TODO: consolidate
+    public hasMine: boolean;
+    public score: number;
+    public hasTreasure: boolean;
+    public isRevealed: boolean;
+}
+
 export class Room {
     constructor(
         public width: number,
         public height: number,
     ) {
-
+        this.maxIndex = width*height;
+        this.tiles = new Array(this.maxIndex);
+        for (var i = 0; i < this.maxIndex; i++) {
+            this.tiles[i] = new Tile();
+        }
+        this.minesInitialized = false;
     }
-
-    private mines: Point[];
-    //private numbers: number[];
+    private tiles: Tile[];
+    private maxIndex: number;
+    private minesInitialized: boolean;
 
     public Initialize(mineCount: number) {
-        this.mines = this.InitializeMines(mineCount);
-        //this.numbers = this.InitializeNumbers(this.mines);
+        this.InitializeMines(mineCount);
+        this.InitializeNumbers();
     }
 
-    public HasMine(location: Point) {
-
+    public TileAt(location: Point) {
+        const i = location.y * this.width + location.x;
+        return this.tiles[i];
     }
-
-    public GetNumber(location: Point) {
-
-    }
-
-    private IndexFromPoint(location: Point) {
-        return location.y * this.width + location.x;
-    }
-
+/*
     private PointFromIndex(index: number) {
         let row = Math.floor(index / this.width);
         let rowStart = row * this.width;
         let column = index - rowStart;
         return Point.Make(row, column);
     }
-
+*/
     private InitializeMines(mineCount: number) {
-        let mineList = new Point[mineCount];
-        for (var i = 0; i < mineCount; i++) {
-            let newMine = this.makeNewMine(mineList);
-            mineList[i] = newMine;
+        if (mineCount >= this.maxIndex) {
+            throw "mineCount is too large. Should be less than number of tiles."
         }
-        return mineList;
+        if (this.minesInitialized) {
+            return;
+        }
+        let count = 0;
+        while (count < mineCount) {
+            let candidate = this.getRandomInt(this.maxIndex);
+            let tile = this.tiles[candidate];
+            if (tile.hasMine) {
+                continue;
+            }
+            tile.hasMine = true;
+            count++;
+        }
+        this.minesInitialized = true;
     }
 
-    private makeNewMine(existingMines: Point[]) {
-        var proposedX = this.getRandomInt(this.width);
-        var proposedY = this.getRandomInt(this.height);
-        var proposedPoint = Point.Make(proposedX, proposedY);
-        if (existingMines.find(n => n == proposedPoint)) {
-            return this.makeNewMine(existingMines);
-        } else {
-            return proposedPoint;
+    private InitializeNumbers() {
+        for (let i = 0; i < this.maxIndex; i++) {
+            this.tiles[i].score = 1;
         }
     }
 
     private getRandomInt(max: number) {
         return Math.floor(Math.random() * Math.floor(max));
     }
-
-    //private InitializeNumbers(mines: Point[]) {
-        // return number[]
-    //}
 }

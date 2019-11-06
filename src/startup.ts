@@ -7,6 +7,7 @@ if (element)
     element.innerText = "Dungeon Sweeper";
 
 const context = (<HTMLCanvasElement>document.getElementById('displayHost')).getContext('2d');
+const playButton = (<HTMLButtonElement>document.getElementById('playButton'))
 if (context) {
     let scale = 20;
     let renderer = new Renderer(context, scale);
@@ -15,5 +16,8 @@ if (context) {
     let game = new Game(renderer);
     game.Initialize();
     game.OpenMenu("main");
+    if (playButton) {
+        playButton.onclick = () => game.Start();
+    }
 }
 
