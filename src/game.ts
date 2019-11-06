@@ -6,13 +6,9 @@ export class Game {
     constructor (
         private renderer: Renderer
     ) {
-        this.playing = false;
         this.initialized = false;
-
     }
 
-    // @ts-ignore 'playing' is declared but its value is never read
-    private playing: boolean;
     private initialized: boolean;
     private currentRoom?: Room;
     
@@ -30,10 +26,7 @@ export class Game {
             }
         };
 
-        const size = 15;
-        this.currentRoom = new Room(size, size);
-        this.renderer.DrawRoom(this.currentRoom);
-
+        this.Start();
         this.initialized = true;
     }
 
@@ -54,10 +47,10 @@ export class Game {
     }
 
     Start() {
-        this.playing = true;
-        if (this.currentRoom) {
-            this.currentRoom.Initialize(Math.floor(this.currentRoom.height * this.currentRoom.width / 5));
-            this.renderer.DrawRoom(this.currentRoom);
-        }
+        const size = 15;
+        let mineCount = Math.floor(size * size / 5);
+        this.currentRoom = new Room(size, size, mineCount);
+        this.renderer.SetRoom(this.currentRoom);
+        this.renderer.DrawRoom();
     }
 }
