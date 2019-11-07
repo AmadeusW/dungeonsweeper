@@ -61,7 +61,7 @@ export class Game {
 
     Start() {
         const size = 15;
-        let mineCount = Math.floor(size * size / 5);
+        let mineCount = Math.floor(size * size / 6);
         this.currentRoom = new Room(size, size, mineCount);
         this.renderer.currentRoom = this.currentRoom;
         this.renderer.DrawRoom(this.currentRoom);

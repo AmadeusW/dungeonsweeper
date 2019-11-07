@@ -67,11 +67,12 @@ export class Renderer {
     public Draw(room: Room, p: Point) {
         const tile = room.TileAt(p);
         const xy = this.PointToScreen(p);
-        this.context.fillStyle = tile.hasMine ? '#a22' : tile.isRevealed ? '#888' : '#aaa';
-        this.context.strokeStyle = '#000';
+        this.context.fillStyle = tile.hasMine ? '#a22' : tile.isRevealed ? '#999' : '#ccc';
+        this.context.strokeStyle = tile.isRevealed ? '#909090' : '#777';
         this.context.fillRect(xy[0], xy[1], this.scale, this.scale);
         this.context.strokeRect(xy[0], xy[1], this.scale, this.scale);
-        this.Write(tile.score.toString(), p);
+        if (tile.score > 0 && !tile.hasMine)
+            this.Write(tile.score.toString(), p);
     }
 
     public DrawPoints(room: Room, points: Point[]) {
