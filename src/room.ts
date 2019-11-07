@@ -47,14 +47,15 @@ export class Room {
         const i = location.y * this.width + location.x;
         return this.tiles[i];
     }
-/*
+
     private PointFromIndex(index: number) {
         let row = Math.floor(index / this.width);
         let rowStart = row * this.width;
         let column = index - rowStart;
-        return Point.Make(row, column);
+        console.log(`Point from index ${index}: row ${row} starts at ${rowStart} column ${column}`);
+        return Point.Make(column, row);
     }
-*/
+
     private InitializeMines() {
         if (this.minesInitialized) {
             return;
@@ -74,7 +75,34 @@ export class Room {
 
     private InitializeNumbers() {
         for (let i = 0; i < this.maxIndex; i++) {
-            this.tiles[i].score = 1;
+            const point = this.PointFromIndex(i);
+            let nearMines = 0;
+            console.log(`Initializing tile ${i} or ${point.x},${point.y}`);
+            // To the sides
+            if (point.x > 0)
+                nearMines += this.tiles[i - 1].hasMine ? 1 : 0;
+            if (point.x < this.width - 1)
+                nearMines += this.tiles[i + 1].hasMine ? 1 : 0;
+
+            // Above
+            if (point.y > 0) {
+                nearMines += this.tiles[i - this.width].hasMine ? 1 : 0;
+                if (point.x > 0)
+                    nearMines += this.tiles[i - this.width - 1].hasMine ? 1 : 0;
+                if (point.x < this.width - 1)
+                    nearMines += this.tiles[i - this.width + 1].hasMine ? 1 : 0;
+            }
+
+            // Below
+            if (point.y < this.height - 1) {
+                nearMines += this.tiles[i + this.width].hasMine ? 1 : 0;
+                if (point.x > 0)
+                    nearMines += this.tiles[i + this.width - 1].hasMine ? 1 : 0;
+                if (point.x < this.width - 1)
+                    nearMines += this.tiles[i + this.width + 1].hasMine ? 1 : 0;
+            }
+            
+            this.tiles[i].score = nearMines;
         }
     }
 

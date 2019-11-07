@@ -55,7 +55,8 @@ export class Renderer {
 
     public Write(text: string, p: Point) {
         let s = this.PointToScreen(p);
-        this.context.fillText(text, s[0], s[1]);
+        this.context.fillStyle = `#222`;
+        this.context.fillText(text, s[0] + this.scale*0.3, s[1] + this.scale*0.8);
     }
 
     public SetRoom(room: Room) {
@@ -81,5 +82,6 @@ export class Renderer {
         this.context.strokeStyle = '#000';
         this.context.fillRect(xy[0], xy[1], this.scale, this.scale);
         this.context.strokeRect(xy[0], xy[1], this.scale, this.scale);
+        this.Write(tile.score.toString(), p);
     }
 }
