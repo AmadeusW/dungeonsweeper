@@ -37,8 +37,8 @@ export class Room {
     private minesInitialized: boolean;
     public IsInitialized: boolean;
 
-    public Initialize() {
-        this.InitializeMines();
+    public Initialize(safePoint: Point) {
+        this.InitializeMines(safePoint);
         this.InitializeNumbers();
         this.IsInitialized = true;
     }
@@ -46,6 +46,48 @@ export class Room {
     public TileAt(location: Point) {
         const i = location.y * this.width + location.x;
         return this.tiles[i];
+    }
+
+    public IndexAt(location: Point) {
+        return location.y * this.width + location.x;
+    }
+
+    public RevealTile(point: Point, redrawList: Point[]) {
+        let clickedTile = this.TileAt(point);
+        if (clickedTile.isRevealed)
+            return;
+
+        clickedTile.isRevealed = true;
+        redrawList.push(point);
+        if (clickedTile.hasMine) {
+            alert("Boom");
+        }
+        else if (clickedTile.score == 0) {
+            // To the sides
+            if (point.x > 0)
+                this.RevealTile(Point.Make(point.x - 1, point.y), redrawList);
+            if (point.x < this.width - 1)
+                this.RevealTile(Point.Make(point.x + 1, point.y), redrawList);
+
+            // Above
+            if (point.y > 0) {
+                this.RevealTile(Point.Make(point.x, point.y - 1), redrawList);
+                if (point.x > 0)
+                    this.RevealTile(Point.Make(point.x - 1, point.y - 1), redrawList);
+                if (point.x < this.width - 1)
+                    this.RevealTile(Point.Make(point.x + 1, point.y - 1), redrawList);
+            }
+
+            // Below
+            if (point.y < this.height - 1) {
+                this.RevealTile(Point.Make(point.x, point.y + 1), redrawList);
+                if (point.x > 0)
+                    this.RevealTile(Point.Make(point.x - 1, point.y + 1), redrawList);
+                if (point.x < this.width - 1)
+                    this.RevealTile(Point.Make(point.x + 1, point.y + 1), redrawList);
+            }
+        }
+        return redrawList;
     }
 
     private PointFromIndex(index: number) {
@@ -56,15 +98,16 @@ export class Room {
         return Point.Make(column, row);
     }
 
-    private InitializeMines() {
+    private InitializeMines(safePoint: Point) {
         if (this.minesInitialized) {
             return;
         }
+        let safeIndex = this.IndexAt(safePoint); 
         let count = 0;
         while (count < this.mineCount) {
             let candidate = this.getRandomInt(this.maxIndex);
             let tile = this.tiles[candidate];
-            if (tile.hasMine) {
+            if (tile.hasMine || candidate == safeIndex) {
                 continue;
             }
             tile.hasMine = true;

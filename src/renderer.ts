@@ -1,5 +1,6 @@
 import { Point } from "./data";
 import { Room } from "./room";
+import { Game } from "./game";
 
 export class Renderer {
     constructor (
@@ -9,7 +10,7 @@ export class Renderer {
             if (!context) {
                 throw "Unable to retrieve CanvasRenderingContext2D";
             }
-            context.font = '20px monospace';
+            context.font = '18px monospace';
             this.context = context;
             let that = this;
             this.canvas.onclick = function(ev: MouseEvent) {
@@ -29,7 +30,8 @@ export class Renderer {
             }
         }
     private context: CanvasRenderingContext2D;
-    private currentRoom?: Room;
+    public GameCallback?: Game;
+    public currentRoom?: Room; // this is needed only for point calculation in onclick. I don't really want to have a reference to game logic here, though.
 
     public PointToScreen(p: Point) {
         return [p.x * this.scale, p.y * this.scale]
@@ -42,15 +44,9 @@ export class Renderer {
     }
 
     private OnCanvasClicked(p: Point) {
-        if (!this.currentRoom) {
-            return;
+        if (this.GameCallback) {
+            this.GameCallback.OnTileClicked(p);
         }
-        if (!this.currentRoom.IsInitialized) {
-            this.currentRoom.Initialize();
-        }
-        let clickedTile = this.currentRoom.TileAt(p);
-        clickedTile.isRevealed = true;
-        this.Draw(this.currentRoom, p);
     }
 
     public Write(text: string, p: Point) {
@@ -59,18 +55,11 @@ export class Renderer {
         this.context.fillText(text, s[0] + this.scale*0.3, s[1] + this.scale*0.8);
     }
 
-    public SetRoom(room: Room) {
-        this.currentRoom = room;
-    }
-
-    public DrawRoom() {
-        if (!this.currentRoom) {
-            return;
-        }
-        for (var x = 0; x < this.currentRoom.width; x++) {
-            for (var y = 0; y < this.currentRoom.height; y++) {
+    public DrawRoom(room: Room) {
+        for (var x = 0; x < room.width; x++) {
+            for (var y = 0; y < room.height; y++) {
                 let p = Point.Make(x, y);
-                this.Draw(this.currentRoom, p);
+                this.Draw(room, p);
             }
         }
     }
@@ -83,5 +72,11 @@ export class Renderer {
         this.context.fillRect(xy[0], xy[1], this.scale, this.scale);
         this.context.strokeRect(xy[0], xy[1], this.scale, this.scale);
         this.Write(tile.score.toString(), p);
+    }
+
+    public DrawPoints(room: Room, points: Point[]) {
+        points.forEach(p => {
+            this.Draw(room, p);
+        });
     }
 }

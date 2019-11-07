@@ -7,6 +7,7 @@ export class Game {
         private renderer: Renderer
     ) {
         this.initialized = false;
+        this.renderer.GameCallback = this;
     }
 
     private initialized: boolean;
@@ -38,6 +39,18 @@ export class Game {
         this.Debug("Return pressed");
     }
 
+    public OnTileClicked(p: Point) {
+        if (!this.currentRoom)
+            return;
+
+        if (!this.currentRoom.IsInitialized) {
+            this.currentRoom.Initialize(p);
+        }
+        let redrawList = new Array();
+        this.currentRoom.RevealTile(p, redrawList);
+        this.renderer.DrawPoints(this.currentRoom, redrawList);
+    }
+
     OpenMenu(menuName: string) {
         if (menuName == "main") {
             this.renderer.Write("Dungeon Sweeper", Point.Make(10, 1));
@@ -50,7 +63,7 @@ export class Game {
         const size = 15;
         let mineCount = Math.floor(size * size / 5);
         this.currentRoom = new Room(size, size, mineCount);
-        this.renderer.SetRoom(this.currentRoom);
-        this.renderer.DrawRoom();
+        this.renderer.currentRoom = this.currentRoom;
+        this.renderer.DrawRoom(this.currentRoom);
     }
 }
