@@ -13,3 +13,9 @@ export class Point {
         return `(${this.x}, ${this.y})`;
     }
 }
+
+export enum Interaction {
+    Enter,
+    Flag,
+    Reveal,
+}

@@ -39,7 +39,7 @@ export class Game {
         this.Debug("Return pressed");
     }
 
-    public OnTileClicked(p: Point) {
+    public OnTileEntered(p: Point) {
         if (!this.currentRoom)
             return;
 
@@ -48,6 +48,18 @@ export class Game {
         }
         let redrawList = new Array();
         this.currentRoom.RevealTile(p, redrawList);
+        this.renderer.DrawPoints(this.currentRoom, redrawList);
+    }
+
+    public OnTileFlagged(p: Point) {
+        if (!this.currentRoom)
+            return;
+
+        if (!this.currentRoom.IsInitialized) {
+            this.currentRoom.Initialize(p);
+        }
+        let redrawList = new Array();
+        this.currentRoom.FlagTile(p, redrawList);
         this.renderer.DrawPoints(this.currentRoom, redrawList);
     }
 

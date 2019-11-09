@@ -3,12 +3,13 @@ import { Point } from "./data";
 export class Tile {
     constructor(){
         this.hasMine = false;
+        this.hasFlag = false;
         this.score = 0;
         this.hasTreasure = false;
         this.isRevealed = false;
     }
-    // TODO: consolidate
     public hasMine: boolean;
+    public hasFlag: boolean;
     public score: number;
     public hasTreasure: boolean;
     public isRevealed: boolean;
@@ -62,32 +63,47 @@ export class Room {
         if (clickedTile.hasMine) {
             alert("Boom");
         }
+        // Reveal neighboring tiles
         else if (clickedTile.score == 0) {
-            // To the sides
-            if (point.x > 0)
-                this.RevealTile(Point.Make(point.x - 1, point.y), redrawList);
-            if (point.x < this.width - 1)
-                this.RevealTile(Point.Make(point.x + 1, point.y), redrawList);
-
-            // Above
-            if (point.y > 0) {
-                this.RevealTile(Point.Make(point.x, point.y - 1), redrawList);
-                if (point.x > 0)
-                    this.RevealTile(Point.Make(point.x - 1, point.y - 1), redrawList);
-                if (point.x < this.width - 1)
-                    this.RevealTile(Point.Make(point.x + 1, point.y - 1), redrawList);
-            }
-
-            // Below
-            if (point.y < this.height - 1) {
-                this.RevealTile(Point.Make(point.x, point.y + 1), redrawList);
-                if (point.x > 0)
-                    this.RevealTile(Point.Make(point.x - 1, point.y + 1), redrawList);
-                if (point.x < this.width - 1)
-                    this.RevealTile(Point.Make(point.x + 1, point.y + 1), redrawList);
-            }
+            this.RevealNeighbors(point, redrawList);
         }
         return redrawList;
+    }
+
+    public FlagTile(point: Point, redrawList: Point[]) {
+        let clickedTile = this.TileAt(point);
+        if (clickedTile.isRevealed)
+            return;
+
+        clickedTile.hasFlag = !clickedTile.hasFlag;
+        redrawList.push(point);
+        return redrawList;
+    }
+
+    public RevealNeighbors(point: Point, redrawList: Point[]) {
+        // To the sides
+        if (point.x > 0)
+            this.RevealTile(Point.Make(point.x - 1, point.y), redrawList);
+        if (point.x < this.width - 1)
+            this.RevealTile(Point.Make(point.x + 1, point.y), redrawList);
+
+        // Above
+        if (point.y > 0) {
+            this.RevealTile(Point.Make(point.x, point.y - 1), redrawList);
+            if (point.x > 0)
+                this.RevealTile(Point.Make(point.x - 1, point.y - 1), redrawList);
+            if (point.x < this.width - 1)
+                this.RevealTile(Point.Make(point.x + 1, point.y - 1), redrawList);
+        }
+
+        // Below
+        if (point.y < this.height - 1) {
+            this.RevealTile(Point.Make(point.x, point.y + 1), redrawList);
+            if (point.x > 0)
+                this.RevealTile(Point.Make(point.x - 1, point.y + 1), redrawList);
+            if (point.x < this.width - 1)
+                this.RevealTile(Point.Make(point.x + 1, point.y + 1), redrawList);
+        }
     }
 
     private PointFromIndex(index: number) {
