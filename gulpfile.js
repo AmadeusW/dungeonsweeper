@@ -18,7 +18,8 @@ gulp.task('default', gulp.series(gulp.parallel('copy-html'), function () {
         debug: true,
         entries: paths.code,
         cache: {},
-        packageCache: {}
+        packageCache: {},
+        browserifyOptions: { debug: true }
     })
     .plugin(tsify)
     .bundle()
