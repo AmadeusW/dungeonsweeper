@@ -6,28 +6,65 @@ export class Renderer {
     constructor (
         private canvas: HTMLCanvasElement,
         private scale: number) {
+
+            // Set up context:
             let context = canvas.getContext('2d');
             if (!context) {
                 throw "Unable to retrieve CanvasRenderingContext2D";
             }
             context.font = '18px monospace';
             this.context = context;
+
+            // Set up mouse handler:
+            this.leftButtonPressed = false;
+            this.rightButtonPressed = false;
             let that = this;
             // TODO: change to onmousedown and onmouseup
-            this.canvas.onclick = function(ev: MouseEvent) {
+            this.canvas.onmousedown = function(ev: MouseEvent) {
                 var point = that.TranslateEventToPoint(ev, that);
-                if (point)
-                    that.OnPointInteraction(point, Interaction.Enter);
+                if (!point) {
+                    return;
+                }
+                if (ev.button == 0) {
+                    that.leftButtonPressed = true;
+                }
+                if (ev.button == 2) {
+                    that.rightButtonPressed = true;
+                }
+                return false;
+            }
+            this.canvas.onmouseup = function(ev: MouseEvent) {
+                if (!that.GameCallback) {
+                    return;
+                }
+                var point = that.TranslateEventToPoint(ev, that);
+                if (!point) {
+                    return;
+                }
+                if (that.leftButtonPressed && that.rightButtonPressed) {
+                    that.GameCallback.OnPointInteraction(point, Interaction.Reveal);
+                }
+                else if (that.leftButtonPressed) {
+                    that.GameCallback.OnPointInteraction(point, Interaction.Enter);
+                }
+                else if (that.rightButtonPressed) {
+                    that.GameCallback.OnPointInteraction(point, Interaction.Flag);
+                }
+                that.leftButtonPressed = false;
+                that.rightButtonPressed = false;
+                return false;
             }
             this.canvas.oncontextmenu = function(ev: MouseEvent) {
-                var point = that.TranslateEventToPoint(ev, that);
-                if (point)
-                    that.OnPointInteraction(point, Interaction.Flag);
+                ev.preventDefault();
+                return false;
             }
         }
     private context: CanvasRenderingContext2D;
     public GameCallback?: Game;
     public currentRoom?: Room; // this is needed only for point calculation in onclick. I don't really want to have a reference to game logic here, though.
+
+    private leftButtonPressed: boolean;
+    private rightButtonPressed: boolean;
 
     private TranslateEventToPoint(ev: MouseEvent, renderer: Renderer) {
         if (!renderer.currentRoom)
@@ -54,20 +91,10 @@ export class Renderer {
         return Point.Make(tx, ty);
     }
 
-    private OnPointInteraction(p: Point, kind: Interaction /* make this an enum */) {
-        if (this.GameCallback) {
-            if (kind == Interaction.Enter) {
-                this.GameCallback.OnTileEntered(p);
-            } else if (kind == Interaction.Flag) {
-                this.GameCallback.OnTileFlagged(p);
-            }
-        }
-    }
-
     public Write(text: string, p: Point) {
         let s = this.PointToScreen(p);
         this.context.fillStyle = `#222`;
-        this.context.fillText(text, s[0] + this.scale*0.3, s[1] + this.scale*0.8);
+        this.context.fillText(text, s[0] + this.scale*0.2, s[1] + this.scale*0.8);
     }
 
     public DrawRoom(room: Room) {
@@ -86,8 +113,16 @@ export class Renderer {
         this.context.strokeStyle = tile.isRevealed ? '#909090' : '#777';
         this.context.fillRect(xy[0], xy[1], this.scale, this.scale);
         this.context.strokeRect(xy[0], xy[1], this.scale, this.scale);
-        if (tile.score > 0 && !tile.hasMine)
+
+        if (tile.isRevealed && tile.score > 0 && !tile.hasMine) {
             this.Write(tile.score.toString(), p);
+        }
+        else if (tile.isRevealed && tile.hasMine) {
+            this.Write("X", p);
+        }
+        else if (tile.hasFlag) {
+            this.Write("^", p);
+        }
     }
 
     public DrawPoints(room: Room, points: Point[]) {

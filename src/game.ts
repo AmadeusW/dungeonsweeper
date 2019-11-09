@@ -1,4 +1,4 @@
-import { Point } from "./data";
+import { Point, Interaction } from "./data";
 import { Renderer } from "./renderer";
 import { Room } from "./room";
 
@@ -39,28 +39,59 @@ export class Game {
         this.Debug("Return pressed");
     }
 
-    public OnTileEntered(p: Point) {
+    public OnPointInteraction(p: Point, kind: Interaction) {
+        switch (kind) {
+            case Interaction.Enter:
+                this.EnterTile(p);
+                return;
+            case Interaction.Flag:
+                this.FlagTile(p);
+                return;
+            case Interaction.Reveal:
+                this.RevealNeighbors(p);
+                return;
+        }
+    }
+
+    public EnterTile(p: Point) {
         if (!this.currentRoom)
             return;
 
-        if (!this.currentRoom.IsInitialized) {
+        if (!this.currentRoom.IsInitialized)
             this.currentRoom.Initialize(p);
-        }
+
         let redrawList = new Array();
         this.currentRoom.RevealTile(p, redrawList);
         this.renderer.DrawPoints(this.currentRoom, redrawList);
     }
 
-    public OnTileFlagged(p: Point) {
+    public FlagTile(p: Point) {
         if (!this.currentRoom)
             return;
 
-        if (!this.currentRoom.IsInitialized) {
+        if (!this.currentRoom.IsInitialized)
             this.currentRoom.Initialize(p);
-        }
+
         let redrawList = new Array();
         this.currentRoom.FlagTile(p, redrawList);
         this.renderer.DrawPoints(this.currentRoom, redrawList);
+    }
+
+    public RevealNeighbors(p: Point) {
+        if (!this.currentRoom)
+            return;
+
+        if (!this.currentRoom.IsInitialized)
+            return;
+
+        let redrawList = new Array();
+        // Reveak only if it appears that all known mines are accounted for
+        this.currentRoom.RevealNeighbors(p, redrawList);
+        this.renderer.DrawPoints(this.currentRoom, redrawList);
+    }
+
+    public GameOver() {
+        this.initialized = false;
     }
 
     OpenMenu(menuName: string) {
@@ -74,7 +105,7 @@ export class Game {
     Start() {
         const size = 15;
         let mineCount = Math.floor(size * size / 6);
-        this.currentRoom = new Room(size, size, mineCount);
+        this.currentRoom = new Room(size, size, mineCount, this);
         this.renderer.currentRoom = this.currentRoom;
         this.renderer.DrawRoom(this.currentRoom);
     }

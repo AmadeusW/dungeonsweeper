@@ -1,4 +1,5 @@
 import { Point } from "./data";
+import { Game } from "./game";
 
 export class Tile {
     constructor(){
@@ -20,6 +21,7 @@ export class Room {
         public width: number,
         public height: number,
         public mineCount: number,
+        private gameCallback: Game,
     ) {
         this.maxIndex = width*height;
         if (this.mineCount >= this.maxIndex) {
@@ -55,13 +57,13 @@ export class Room {
 
     public RevealTile(point: Point, redrawList: Point[]) {
         let clickedTile = this.TileAt(point);
-        if (clickedTile.isRevealed)
+        if (clickedTile.isRevealed || clickedTile.hasFlag)
             return;
 
         clickedTile.isRevealed = true;
         redrawList.push(point);
         if (clickedTile.hasMine) {
-            alert("Boom");
+            this.gameCallback.GameOver();
         }
         // Reveal neighboring tiles
         else if (clickedTile.score == 0) {
@@ -81,6 +83,44 @@ export class Room {
     }
 
     public RevealNeighbors(point: Point, redrawList: Point[]) {
+        // First, determine eligibility
+        const thisTile = this.TileAt(point);
+        if (!thisTile.isRevealed) {
+            return;
+        }
+        const targetFlagCount = thisTile.score;
+        if (targetFlagCount > 0) {
+            let flagCount = 0;
+            // To the sides
+            if (point.x > 0)
+                flagCount += this.TileAt(Point.Make(point.x - 1, point.y)).hasFlag ? 1 : 0;
+            if (point.x < this.width - 1)
+                flagCount += this.TileAt(Point.Make(point.x + 1, point.y)).hasFlag ? 1 : 0;
+
+            // Above
+            if (point.y > 0) {
+                flagCount += this.TileAt(Point.Make(point.x, point.y - 1)).hasFlag ? 1 : 0;
+                if (point.x > 0)
+                    flagCount += this.TileAt(Point.Make(point.x - 1, point.y - 1)).hasFlag ? 1 : 0;
+                if (point.x < this.width - 1)
+                    flagCount += this.TileAt(Point.Make(point.x + 1, point.y - 1)).hasFlag ? 1 : 0;
+            }
+
+            // Below
+            if (point.y < this.height - 1) {
+                flagCount += this.TileAt(Point.Make(point.x, point.y + 1)).hasFlag ? 1 : 0;
+                if (point.x > 0)
+                    flagCount += this.TileAt(Point.Make(point.x - 1, point.y + 1)).hasFlag ? 1 : 0;
+                if (point.x < this.width - 1)
+                    flagCount += this.TileAt(Point.Make(point.x + 1, point.y + 1)).hasFlag ? 1 : 0;
+            }
+
+            if (targetFlagCount > flagCount) {
+                return;
+            }
+        }
+
+        // Then, reveal neighbors
         // To the sides
         if (point.x > 0)
             this.RevealTile(Point.Make(point.x - 1, point.y), redrawList);
